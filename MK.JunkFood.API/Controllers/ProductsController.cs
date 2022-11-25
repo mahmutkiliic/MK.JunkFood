@@ -8,6 +8,7 @@ using MK.JunkFood.API.Dtos;
 using AutoMapper;
 using System.Collections.Generic;
 using MK.JunkFood.API.Errors;
+using MK.JunkFood.API.Helpers;
 
 namespace MK.JunkFood.API.Controllers
 {
@@ -34,12 +35,21 @@ namespace MK.JunkFood.API.Controllers
             _mapper = mapper;
         }
 
+        /* The ApiController is not able to automatically bind productParams to HttpGet method. [FromQuery] is helping us! */
+
         [HttpGet]
-        public async Task<ActionResult<IReadOnlyList<ProductToReturnDto>>> GetProducts()
+        public async Task<ActionResult<Pagination<ProductToReturnDto>>> GetProducts([FromQuery]ProductSpecParams productParams)
         {
-            var spec = new ProductsWithTypesAndBrandsSpec();
+            var spec = new ProductsWithTypesAndBrandsSpec(productParams);
+
+            var countSpec = new ProductWithFilterForCountSpecification(productParams);
+
+            var totalItems = await _productRepo.CountAsync(countSpec);
 
             var products = await _productRepo.ListEntityWithSpecAsync(spec);
+
+            var data = _mapper
+                .Map<IReadOnlyList<Product>, IReadOnlyList<ProductToReturnDto>>(products);
 
             //The way that we dont use AutoMapper
             //return products.Select(product => new ProductToReturnDto
@@ -53,8 +63,7 @@ namespace MK.JunkFood.API.Controllers
             //    ProductType = product.ProductType.Name
             //}).ToList();
 
-            return Ok(_mapper
-                .Map<IReadOnlyList<Product>, IReadOnlyList<ProductToReturnDto>>(products));
+            return Ok(new Pagination<ProductToReturnDto>(productParams.PageIndex, productParams.PageSize, totalItems, data ));
         }
 
 

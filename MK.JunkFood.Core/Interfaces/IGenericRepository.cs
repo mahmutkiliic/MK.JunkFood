@@ -18,5 +18,7 @@ namespace MK.JunkFood.Core.Interfaces
 
         Task<IReadOnlyList<T>> ListEntityWithSpecAsync(ISpecification<T> spec);
 
+        Task<int> CountAsync(ISpecification<T> spec);
+
     }
 }
