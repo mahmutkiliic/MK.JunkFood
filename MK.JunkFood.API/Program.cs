@@ -14,6 +14,16 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+
+builder.Services.AddCors(opt =>
+{
+    opt.AddPolicy("CorsPolicy", policy =>
+    {
+        policy.AllowAnyHeader().AllowAnyMethod().WithOrigins("https://localhost:4200");
+    });
+});
+
+
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 
 //Generic Repository
@@ -28,14 +38,6 @@ builder.Services.AddAutoMapper(typeof(MappingProfiles));
 
 builder.Services.ConfigureApiBehaviorOptions();
 
-
-builder.Services.AddCors(opt =>
-{
-    opt.AddPolicy("CorsPolicy", policy =>
-    {
-        policy.AllowAnyHeader().AllowAnyMethod().WithOrigins("https://localhost:7000");
-    });
-});
 
 
 var app = builder.Build();
